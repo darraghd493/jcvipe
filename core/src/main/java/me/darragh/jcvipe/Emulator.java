@@ -20,6 +20,9 @@ import java.util.Stack;
  */
 @RequiredArgsConstructor
 public final class Emulator {
+    // TODO: Store stack in memory (0xEA0-0xEFF)
+    // TODO: Store display flags in memory (0xF00-0xFFF)
+
     //region Constants
     //region Memory Locations
     private static final int INTERPRETER_MEMORY_LOCATION_FROM = 0x000;
@@ -57,13 +60,14 @@ public final class Emulator {
     //region Machine State
     private final int[] memory /* 16-bits */;
     private final Stack<Integer> stack; // expected to support up to 12 successive subroutine calls
+
     private int indexRegister /* 16-bits */, programCounter /* 12-bits */;
 
     // each timer is updates @ 60hz
     private int soundTimerRegister /* 16-bits */, delayTimerRegister /* 16-bits */;
     //endregion
 
-    private boolean running;
+    private long lastCycle;
 
     public Emulator(
             @NotNull ExtensionCollection extensions,
@@ -82,7 +86,6 @@ public final class Emulator {
         this.programCounter = 0;
         this.soundTimerRegister = 0;
         this.delayTimerRegister = 0;
-        this.running = false;
 
         // load the font into memory
         System.arraycopy(FONT_DATA, 0, this.memory, FONT_MEMORY_LOCATION_FROM, FONT_DATA.length);
@@ -98,8 +101,6 @@ public final class Emulator {
 
         Arrays.fill(this.memory, 0);
         System.arraycopy(FONT_DATA, 0, this.memory, FONT_MEMORY_LOCATION_FROM, FONT_DATA.length);
-
-        this.running = false;
     }
 
     public void loadProgram(int[] program) {
@@ -109,8 +110,16 @@ public final class Emulator {
     //endregion
 
     //region Machine
-    public void tick() {
+    public void tick(double targetHz) {
+        long currentNs = this.extensions.timerExtension().getTimeNs();
+        if (currentNs - this.lastCycle >= (1000000000.0 / targetHz)) {
+            this.lastCycle = currentNs;
+            this.cycle();
+        }
+    }
 
+    private void cycle() {
+        // TODO
     }
     //endregion
 }

@@ -5,4 +5,11 @@ package me.darragh.jcvipe.desktop.window;
  * @since 0.0.1
  */
 public interface Window {
+    void init(int defaultWidth, int defaultHeight);
+
+    void close();
+
+    boolean shouldClose();
+
+    void pollEvents();
 }

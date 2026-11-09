@@ -9,19 +9,19 @@ import java.util.Arrays;
  * @since 0.0.1
  */
 public abstract class StateHoldingDisplayExtension implements DisplayExtension {
-    private static final byte STANDARD_WIDTH = (byte) 64;
-    private static final byte STANDARD_HEIGHT = (byte) 128;
+    public static final int DEFAULT_WIDTH = 64;
+    public static final int DEFAULT_HEIGHT = 32;
 
     private final byte width, height;
     private final boolean[] pixels;
 
     public StateHoldingDisplayExtension() {
-        this(STANDARD_WIDTH, STANDARD_HEIGHT);
+        this(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
-    public StateHoldingDisplayExtension(byte width, byte height) {
-        this.width = width;
-        this.height = height;
+    public StateHoldingDisplayExtension(int width, int height) {
+        this.width = (byte) width;
+        this.height = (byte) height;
         this.pixels = new boolean[width * height];
     }
 
