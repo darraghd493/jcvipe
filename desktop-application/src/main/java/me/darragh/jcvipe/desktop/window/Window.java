@@ -11,5 +11,7 @@ public interface Window {
 
     boolean shouldClose();
 
+    void swapFramebuffers();
+
     void pollEvents();
 }
