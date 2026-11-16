@@ -7,6 +7,8 @@ import me.darragh.jcvipe.desktop.type.Hook;
 import me.darragh.jcvipe.desktop.window.Window;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.glfw.GLFWDropCallback;
+import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -26,12 +28,16 @@ public final class GlfwWindow implements Window {
 
     private final Hook<Size> windowSizeHook = new Hook<>();
     private final Hook<Size> framebufferSizeHook = new Hook<>();
+
     private final Hook<MouseMoveState> mouseMoveHook = new Hook<>();
     private final Hook<MouseEnterState> mouseEnterHook = new Hook<>();
     private final Hook<MouseScrollState> mouseScrollHook = new Hook<>();
     private final Hook<MouseButtonState> mouseButtonHook = new Hook<>();
+
     private final Hook<KeyState> keyHook = new Hook<>();
     private final Hook<TypeCharacterState> typeCharacterHook = new Hook<>();
+
+    private final Hook<PathDropState> pathDropHook = new Hook<>();
 
     private int width, height;
     private int framebufferWidth, framebufferHeight;
@@ -86,6 +92,13 @@ public final class GlfwWindow implements Window {
         });
         glfwSetCharCallback(this.window, (_, character) -> {
             this.typeCharacterHook.call(new GlfwTypeCharacterState(character));
+        });
+        glfwSetDropCallback(this.window, (_, count, paths) -> {
+            String[] pathArray = new String[count];
+            for (int i = 0; i < count; i++) {
+                pathArray[i] = GLFWDropCallback.getName(paths, i);
+            }
+            this.pathDropHook.call(new GlfwPathDropState(pathArray));
         });
 
         // update w/h
@@ -256,6 +269,9 @@ public final class GlfwWindow implements Window {
         public GlfwTypeCharacterState(int character) {
             this(String.valueOf(character));
         }
+    }
+
+    public record GlfwPathDropState(@NotNull String[] paths) implements PathDropState {
     }
     //endregion
 }

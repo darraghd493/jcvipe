@@ -18,6 +18,13 @@ public final class SceneHarness implements Renderable {
     }
 
     @Override
+    public void update() {
+        if (this.currentScene != null) {
+            this.currentScene.update();
+        }
+    }
+
+    @Override
     public void render(int width, int height) {
         if (this.currentScene != null) {
             this.currentScene.render(width, height);
@@ -63,6 +70,13 @@ public final class SceneHarness implements Renderable {
     public void typeChar(@NotNull String character) {
         if (this.currentScene != null) {
             this.currentScene.typeChar(character);
+        }
+    }
+
+    @Override
+    public void dropPaths(@NotNull String[] paths) {
+        if (this.currentScene != null) {
+            this.currentScene.dropPaths(paths);
         }
     }
 }

@@ -31,6 +31,8 @@ public interface Window {
     @NotNull Hook<KeyState> getKeyHook();
 
     @NotNull Hook<TypeCharacterState> getTypeCharacterHook();
+
+    @NotNull Hook<PathDropState> getPathDropHook();
     //endregion
 
     //region Triggers
@@ -133,6 +135,10 @@ public interface Window {
 
     interface TypeCharacterState {
         @NotNull String character();
+    }
+
+    interface PathDropState {
+        @NotNull String[] paths();
     }
     //endregion
 }

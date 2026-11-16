@@ -41,4 +41,9 @@ public final class NoGameLoadedScene extends Scene {
         vg.textAlign(NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
         vg.text(width / 2f, height / 2f, "No Game Loaded");
     }
+
+    @Override
+    public void dropPaths(@NotNull String[] paths) {
+        // TODO: Load first path into memory
+    }
 }

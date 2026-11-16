@@ -55,12 +55,15 @@ public final class DesktopApplication {
             this.mouseStateTracker.setX((int) state.x());
             this.mouseStateTracker.setY((int) state.y());
         });
+
         this.window.getMouseEnterHook().listen(state -> {
             this.mouseStateTracker.setHovered(state.entered());
         });
+
         this.window.getMouseScrollHook().listen(state -> {
             this.sceneHarness.mouseScroll((int) state.x(), (int) state.y());
         });
+
         this.window.getMouseButtonHook().listen(state -> {
             this.mouseStateTracker.reportButton(state);
             if (state.isButtonPress()) {
@@ -77,6 +80,10 @@ public final class DesktopApplication {
             } else if (state.isActionRelease()) {
                 this.sceneHarness.keyPress(state);
             }
+        });
+
+        this.window.getPathDropHook().listen(state -> {
+            this.sceneHarness.dropPaths(state.paths());
         });
 
         // prepare for rendering

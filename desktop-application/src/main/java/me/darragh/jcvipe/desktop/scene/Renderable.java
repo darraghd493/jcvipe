@@ -33,4 +33,8 @@ public interface Renderable {
     default void typeChar(@NotNull String character) {
         // no-op
     }
+
+    default void dropPaths(@NotNull String[] paths) {
+        // no-op
+    }
 }
