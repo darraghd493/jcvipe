@@ -1,5 +1,6 @@
 package me.darragh.jcvipe.extension.display.impl;
 
+import lombok.Getter;
 import me.darragh.jcvipe.extension.display.DisplayExtension;
 
 import java.util.Arrays;
@@ -12,8 +13,9 @@ public abstract class StateHoldingDisplayExtension implements DisplayExtension {
     public static final int DEFAULT_WIDTH = 64;
     public static final int DEFAULT_HEIGHT = 32;
 
-    private final byte width, height;
-    private final boolean[] pixels;
+    @Getter
+    protected final byte width, height;
+    private final boolean[] pixels; // avoid re-alloc
 
     public StateHoldingDisplayExtension() {
         this(DEFAULT_WIDTH, DEFAULT_HEIGHT);

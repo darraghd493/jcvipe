@@ -1,15 +1,27 @@
 package me.darragh.jcvipe.desktop.configuration;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import me.darragh.jcvipe.Emulator;
 import org.intellij.lang.annotations.MagicConstant;
+
+import static me.darragh.jcvipe.Emulator.*;
 
 /**
  * @author darraghd493
  * @since 0.0.1
  */
 @Data
-public final class Configuration {
+@AllArgsConstructor
+public final class Configuration { // TODO: Serializable
+    public static final Configuration DEFAULT = new Configuration(Bindings.QWERTY_BINDINGS, MEMORY_4KB);
+
     private Bindings bindings;
+    private @MagicConstant(intValues = {
+            MEMORY_2KB,
+            MEMORY_4KB,
+            MEMORY_32KB
+    }) int memoryAllocated;
 
     public record Bindings(
             char in1, char in2, char in3, char inC,

@@ -1,5 +1,6 @@
 package me.darragh.jcvipe.desktop.scene;
 
+import me.darragh.jcvipe.desktop.renderer.framebuffer.Framebuffer;
 import me.darragh.jcvipe.desktop.window.Window;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,9 +26,9 @@ public final class SceneHarness implements Renderable {
     }
 
     @Override
-    public void render(int width, int height) {
+    public void render(@NotNull Framebuffer framebuffer, int width, int height) {
         if (this.currentScene != null) {
-            this.currentScene.render(width, height);
+            this.currentScene.render(framebuffer, width, height);
         }
     }
 

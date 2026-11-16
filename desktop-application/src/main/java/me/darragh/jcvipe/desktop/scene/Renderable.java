@@ -1,5 +1,6 @@
 package me.darragh.jcvipe.desktop.scene;
 
+import me.darragh.jcvipe.desktop.renderer.framebuffer.Framebuffer;
 import me.darragh.jcvipe.desktop.window.Window;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,7 +9,11 @@ import org.jetbrains.annotations.NotNull;
  * @since 0.0.1
  */
 public interface Renderable {
-    void render(int width, int height);
+    default void update() {
+        // no-op
+    }
+
+    void render(@NotNull Framebuffer framebuffer, int width, int height);
 
     default void mouseClick(int x, int y, int button) {
         // no-op

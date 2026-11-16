@@ -12,7 +12,7 @@ import static org.lwjgl.opengl.GL30C.*;
  * @since 0.0.1
  */
 @UtilityClass
-public final class StateManager {
+public final class StateManager { // TODO: Handle desync with NanoVG
     public static final BindTextureTrackedState TEXTURE = new BindTextureTrackedState(GL_TEXTURE_2D);
     public static final BindFramebufferTrackedState FRAMEBUFFER = new BindFramebufferTrackedState(GL_FRAMEBUFFER);
     public static final BindVertexArrayTrackedState VERTEX_ARRAY = new BindVertexArrayTrackedState();

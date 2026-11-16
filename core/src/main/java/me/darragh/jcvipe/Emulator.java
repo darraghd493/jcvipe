@@ -33,6 +33,13 @@ public final class Emulator {
 
     private static final int PROGRAM_MEMORY_LOCATION_FROM = 0x200;
     //endregion
+
+    //region Memory Sizes
+    public static final int MEMORY_2KB = (2 * 1024) / 16;
+    public static final int MEMORY_4KB = (4 * 1024) / 16;
+    public static final int MEMORY_32KB = (32 * 1024) / 16;
+    //endregion
+
     //region Font Data
     private static final int[] FONT_DATA = new int[] {
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -72,9 +79,9 @@ public final class Emulator {
     public Emulator(
             @NotNull ExtensionCollection extensions,
             @MagicConstant(intValues = {
-                    (2 * 1024) / 16, // 2kb
-                    (4 * 1024) / 16, // 4kb
-                    (32 * 1024) / 16 // 32kb
+                    MEMORY_2KB,
+                    MEMORY_4KB,
+                    MEMORY_32KB
             }) int allocatedMemory
     ) {
         this.extensions = extensions;

@@ -1,5 +1,6 @@
 package me.darragh.jcvipe.desktop;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import me.darragh.jcvipe.desktop.input.KeyboardStateTracker;
 import me.darragh.jcvipe.desktop.input.MouseStateTracker;
@@ -20,7 +21,9 @@ import static org.lwjgl.opengl.GL11C.*;
 @Slf4j
 public final class DesktopApplication {
     //region Input
+    @Getter
     private KeyboardStateTracker keyboardStateTracker;
+    @Getter
     private MouseStateTracker mouseStateTracker;
     //endregion
 
@@ -28,11 +31,13 @@ public final class DesktopApplication {
     private GlfwWindow window;
 
     private Framebuffer contentFramebuffer;
+    @Getter
     private TextureRenderer textureRenderer;
 
+    @Getter
     private SceneHarness sceneHarness;
 
-    private NanoVGContext vgContext;
+    private NanoVGContext vg;
     //endregion
 
     //region Lifecycle
@@ -95,15 +100,15 @@ public final class DesktopApplication {
         );
         this.textureRenderer = new TextureRenderer();
 
-        this.vgContext = NanoVGContext.create();
+        this.vg = NanoVGContext.create();
 
         this.sceneHarness = new SceneHarness();
-        this.sceneHarness.load(new NoGameLoadedScene(this.vgContext));
+        this.sceneHarness.load(new NoGameLoadedScene(this.vg));
 
         log.info("Loading fonts...");
-        this.vgContext.createFont(NanoVGContext.FONT_SANS_REGULAR, "/assets/fonts/Inter_28pt-Regular.ttf");
-        this.vgContext.createFont(NanoVGContext.FONT_SANS_MEDIUM, "/assets/fonts/Inter_28pt-Medium.ttf");
-        this.vgContext.createFont(NanoVGContext.FONT_SANS_BOLD, "/assets/fonts/Inter_28pt-Bold.ttf");
+        this.vg.createFont(NanoVGContext.FONT_SANS_REGULAR, "/assets/fonts/Inter_28pt-Regular.ttf");
+        this.vg.createFont(NanoVGContext.FONT_SANS_MEDIUM, "/assets/fonts/Inter_28pt-Medium.ttf");
+        this.vg.createFont(NanoVGContext.FONT_SANS_BOLD, "/assets/fonts/Inter_28pt-Bold.ttf");
 
         // main loop
         log.info("Starting game loop...");
@@ -117,6 +122,7 @@ public final class DesktopApplication {
 
     public void loop() {
         while (!this.window.shouldClose()) {
+            this.sceneHarness.update();
             this.renderFramebuffer();
             this.window.swapFramebuffers();
             this.window.pollEvents();
@@ -138,11 +144,7 @@ public final class DesktopApplication {
 
         this.contentFramebuffer.bind();
         this.contentFramebuffer.clear(0f, 0f, 0f, 1f);
-
-        this.vgContext.beginFrame(width, height);
-        this.sceneHarness.render(width, height);
-        this.vgContext.endFrame();
-
+        this.sceneHarness.render(this.contentFramebuffer, width, height);
         this.contentFramebuffer.release();
 
         this.textureRenderer.draw(this.contentFramebuffer.getTextureId());
