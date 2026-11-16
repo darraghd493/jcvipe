@@ -1,6 +1,7 @@
 package me.darragh.jcvipe.desktop.type;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -25,6 +26,6 @@ public final class Hook<T> {
 
     @FunctionalInterface
     public interface Callback<T> {
-        void call(@Nullable T value);
+        void call(@NotNull T value);
     }
 }

@@ -5,11 +5,13 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.darragh.jcvipe.desktop.type.Hook;
 import me.darragh.jcvipe.desktop.window.Window;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWErrorCallback.createPrint;
+import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
@@ -24,14 +26,20 @@ public final class GlfwWindow implements Window {
 
     private final Hook<Size> windowSizeHook = new Hook<>();
     private final Hook<Size> framebufferSizeHook = new Hook<>();
-    private final Hook<KeyState> keyStateHook = new Hook<>();
+    private final Hook<MouseMoveState> mouseMoveHook = new Hook<>();
+    private final Hook<MouseEnterState> mouseEnterHook = new Hook<>();
+    private final Hook<MouseScrollState> mouseScrollHook = new Hook<>();
+    private final Hook<MouseButtonState> mouseButtonHook = new Hook<>();
+    private final Hook<KeyState> keyHook = new Hook<>();
+    private final Hook<TypeCharacterState> typeCharacterHook = new Hook<>();
 
     private int width, height;
     private int framebufferWidth, framebufferHeight;
 
-    @SuppressWarnings("resource")
+    @SuppressWarnings({"resource", "CodeBlock2Expr"})
     @Override
     public void init(int defaultWidth, int defaultHeight) {
+        log.info("Initializing GLFW window...");
         createPrint(System.err).set();
 
         if (!glfwInit()) {
@@ -43,12 +51,14 @@ public final class GlfwWindow implements Window {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
+        log.info("Creating window...");
         this.window = glfwCreateWindow(defaultWidth, defaultHeight, "jcvipe v1.0.0", NULL, NULL); // TODO: jcvipe v{version}-{hash}
         if (this.window == NULL) {
             throw new RuntimeException("Failed to create GLFW window");
         }
 
         // attach hooks
+        log.info("Registering callbacks...");
         glfwSetWindowSizeCallback(this.window, (_, width, height) -> {
             this.width = width;
             this.height = height;
@@ -59,11 +69,28 @@ public final class GlfwWindow implements Window {
             this.framebufferHeight = height;
             this.framebufferSizeHook.call(new Size(width, height));
         });
+        glfwSetCursorPosCallback(this.window, (_, x, y) -> {
+            this.mouseMoveHook.call(new GlfwMouseMoveState(x, y));
+        });
+        glfwSetCursorEnterCallback(this.window, (_, entered) -> {
+            this.mouseEnterHook.call(new GlfwMouseEnterState(entered));
+        });
+        glfwSetScrollCallback(this.window, (_, x, y) -> {
+            this.mouseScrollHook.call(new GlfwMouseScrollState(x, y));
+        });
+        glfwSetMouseButtonCallback(this.window, (_, button, action, modifiers) -> {
+            this.mouseButtonHook.call(new GlfwMouseButtonState(button, action, modifiers));
+        });
         glfwSetKeyCallback(this.window, (_, key, scancode, action, modifiers) -> {
-            this.keyStateHook.call(new KeyState(key, scancode, action, modifiers));
+            this.keyHook.call(new GlfwKeyState(key, scancode, action, modifiers));
+        });
+        glfwSetCharCallback(this.window, (_, character) -> {
+            this.typeCharacterHook.call(new GlfwTypeCharacterState(character));
         });
 
         // update w/h
+        log.info("Finishing up...");
+
         int[] windowWidth = new int[1], windowHeight = new int[1],
                 framebufferWidth = new int[1], framebufferHeight = new int[1];
 
@@ -79,9 +106,13 @@ public final class GlfwWindow implements Window {
         this.framebufferSizeHook.call(new Size(this.framebufferWidth, this.framebufferHeight));
 
         // contextualise opengl
+        log.info("Contextualising OpenGL context...");
+
         glfwMakeContextCurrent(this.window);
         glfwSwapInterval(1);
         glfwShowWindow(this.window);
+
+        createCapabilities();
     }
 
     @Override
@@ -110,63 +141,121 @@ public final class GlfwWindow implements Window {
     }
 
     //region Data Models
-    public record Size(int width, int height) {
+    public record GlfwMouseMoveState(double x, double y) implements MouseMoveState {
     }
 
-    public record KeyState(int keyCode, int scanCode, int action, int modifiers) {
+    public record GlfwMouseEnterState(boolean entered) implements MouseEnterState {
+    }
+
+    public record GlfwMouseScrollState(double x, double y) implements MouseScrollState {
+    }
+
+    public record GlfwMouseButtonState(int button, int action, int modifiers) implements MouseButtonState {
+        //region Action
+        @Override
+        public boolean isButtonPress() {
+            return this.action == GLFW_PRESS;
+        }
+
+        @Override
+        public boolean isButtonRelease() {
+            return this.action == GLFW_RELEASE;
+        }
+        //endregion
+
+        //region Modifiers
+        @Override
+        public boolean isWithShift() {
+            return (this.modifiers & GLFW_MOD_SHIFT) != 0;
+        }
+
+        @Override
+        public boolean isWithControl() {
+            return (this.modifiers & GLFW_MOD_CONTROL) != 0;
+        }
+
+        @Override
+        public boolean isWithAlt() {
+            return (this.modifiers & GLFW_MOD_ALT) != 0;
+        }
+
+        @Override
+        public boolean isWithSuper() {
+            return (this.modifiers & GLFW_MOD_SUPER) != 0;
+        }
+
+        @Override
+        public boolean isWithCapsLock() {
+            return (this.modifiers & GLFW_MOD_CAPS_LOCK) != 0;
+        }
+
+        @Override
+        public boolean isWithNumLock() {
+            return (this.modifiers & GLFW_MOD_NUM_LOCK) != 0;
+        }
+        //endregion
+    }
+
+    public record GlfwKeyState(int keyCode, int scanCode, int action, int modifiers) implements KeyState {
+        @Override
         public @Nullable String keyName() {
             return glfwGetKeyName(this.keyCode, this.scanCode);
         }
 
         //region Action
-        public boolean isPress() {
+        @Override
+        public boolean isActionPress() {
             return this.action == GLFW_PRESS;
         }
 
-        public boolean isRelease() {
+        @Override
+        public boolean isActionRelease() {
             return this.action == GLFW_RELEASE;
         }
 
-        public boolean isRepeat() {
+        @Override
+        public boolean isActionRepeat() {
             return this.action == GLFW_REPEAT;
         }
-
-        //region Physical
-        public boolean isKeyUp() {
-            return this.isRelease();
-        }
-
-        public boolean isKeyDown() {
-            return this.isPress() || this.isRepeat();
-        }
-        //endregion
         //endregion
 
         //region Modifiers
+        @Override
         public boolean isWithShift() {
             return (this.modifiers & GLFW_MOD_SHIFT) != 0;
         }
 
+        @Override
         public boolean isWithControl() {
             return (this.modifiers & GLFW_MOD_CONTROL) != 0;
         }
 
+        @Override
         public boolean isWithAlt() {
             return (this.modifiers & GLFW_MOD_ALT) != 0;
         }
 
+        @Override
         public boolean isWithSuper() {
             return (this.modifiers & GLFW_MOD_SUPER) != 0;
         }
 
+        @Override
         public boolean isWithCapsLock() {
             return (this.modifiers & GLFW_MOD_CAPS_LOCK) != 0;
         }
 
+        @Override
         public boolean isWithNumLock() {
             return (this.modifiers & GLFW_MOD_NUM_LOCK) != 0;
         }
         //endregion
+    }
+
+    public record GlfwTypeCharacterState(@NotNull String character) implements TypeCharacterState {
+        public GlfwTypeCharacterState(int character) {
+            this(String.valueOf(character));
+        }
     }
     //endregion
 }
