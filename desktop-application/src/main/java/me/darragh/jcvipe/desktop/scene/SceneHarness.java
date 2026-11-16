@@ -18,9 +18,9 @@ public final class SceneHarness implements Renderable {
     }
 
     @Override
-    public void render() {
+    public void render(int width, int height) {
         if (this.currentScene != null) {
-            this.currentScene.render();
+            this.currentScene.render(width, height);
         }
     }
 

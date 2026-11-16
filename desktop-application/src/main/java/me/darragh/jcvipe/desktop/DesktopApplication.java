@@ -88,10 +88,15 @@ public final class DesktopApplication {
         );
         this.textureRenderer = new TextureRenderer();
 
+        this.vgContext = NanoVGContext.create();
+
         this.sceneHarness = new SceneHarness();
         this.sceneHarness.load(new NoGameLoadedScene(this.vgContext));
 
-        this.vgContext = NanoVGContext.create();
+        log.info("Loading fonts...");
+        this.vgContext.createFont(NanoVGContext.FONT_SANS_REGULAR, "/assets/fonts/Inter_28pt-Regular.ttf");
+        this.vgContext.createFont(NanoVGContext.FONT_SANS_MEDIUM, "/assets/fonts/Inter_28pt-Medium.ttf");
+        this.vgContext.createFont(NanoVGContext.FONT_SANS_BOLD, "/assets/fonts/Inter_28pt-Bold.ttf");
 
         // main loop
         log.info("Starting game loop...");
@@ -121,8 +126,15 @@ public final class DesktopApplication {
         glClearColor(0f, 0f, 0f, 1f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        int width = this.contentFramebuffer.getWidth(),
+                height = this.contentFramebuffer.getHeight();
+
         this.contentFramebuffer.bind();
-        this.contentFramebuffer.clear(0.0627f /* 16 / 255, dark grey background */, 0.0627f, 0.0627f, 1f);
+        this.contentFramebuffer.clear(0f, 0f, 0f, 1f);
+
+        this.vgContext.beginFrame(width, height);
+        this.sceneHarness.render(width, height);
+        this.vgContext.endFrame();
 
         this.contentFramebuffer.release();
 

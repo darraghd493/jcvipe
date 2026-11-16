@@ -17,6 +17,11 @@ import static org.lwjgl.nanovg.NanoVG.*;
  */
 @Slf4j
 public record NanoVGContext(long ptr) {
+    public static final String FONT_SANS_REGULAR = "Sans-Regular";
+    public static final String FONT_SANS_MEDIUM = "Sans-Medium";
+    public static final String FONT_SANS_BOLD = "Sans-Bold";
+
+
     public static @NotNull NanoVGContext create() {
         log.info("Creating NVG context...");
         return new NanoVGContext(

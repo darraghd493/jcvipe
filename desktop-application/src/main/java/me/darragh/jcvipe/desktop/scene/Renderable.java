@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @since 0.0.1
  */
 public interface Renderable {
-    void render();
+    void render(int width, int height);
 
     default void mouseClick(int x, int y, int button) {
         // no-op

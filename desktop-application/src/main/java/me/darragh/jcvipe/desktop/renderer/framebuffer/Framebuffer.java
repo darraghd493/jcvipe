@@ -16,7 +16,7 @@ import static org.lwjgl.opengl.GL30C.*;
  */
 @Getter
 public final class Framebuffer {
-    private int fboId, textureId;
+    private int fboId, rboId, textureId;
     private int width, height;
     private final int internalFormat, format, type, filter;
 
@@ -36,7 +36,7 @@ public final class Framebuffer {
 
     private void create() {
         this.fboId = glGenFramebuffers();
-        StateManager.FRAMEBUFFER.set(this.fboId);
+        this.bind();
 
         this.textureId = glGenTextures();
         StateManager.TEXTURE.set(this.textureId);
@@ -45,6 +45,11 @@ public final class Framebuffer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this.filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this.filter);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this.textureId, 0);
+
+        this.rboId = glGenRenderbuffers();
+        glBindRenderbuffer(GL_RENDERBUFFER, this.rboId);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this.width, this.height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this.rboId);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             throw new RuntimeException("Failed to create framebuffer");
@@ -76,11 +81,14 @@ public final class Framebuffer {
 
             StateManager.TEXTURE.set(this.textureId);
             glTexImage2D(GL_TEXTURE_2D, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, (ByteBuffer) null);
-        }
+
+            glBindRenderbuffer(GL_RENDERBUFFER, this.rboId);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this.width, this.height);        }
     }
 
     public void delete() {
         glDeleteFramebuffers(this.fboId);
+        glDeleteRenderbuffers(this.rboId);
         glDeleteTextures(this.textureId);
     }
 }
